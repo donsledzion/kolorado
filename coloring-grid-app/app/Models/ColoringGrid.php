@@ -13,6 +13,7 @@ class ColoringGrid extends Model
         'grid_width',
         'grid_height',
         'color_count',
+        'numbering_type',
         'grid_data',
         'color_palette',
     ];

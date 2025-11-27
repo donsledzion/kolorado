@@ -27,18 +27,33 @@
     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
         <div>
             <label for="grid_width" style="display: block; margin-bottom: 5px; font-weight: bold;">Szerokość siatki:</label>
-            <input type="number" name="grid_width" id="grid_width" value="30" min="10" max="100" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
+            <input type="number" name="grid_width" id="grid_width" value="30" min="10" max="52" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
         </div>
 
         <div>
             <label for="grid_height" style="display: block; margin-bottom: 5px; font-weight: bold;">Wysokość siatki:</label>
-            <input type="number" name="grid_height" id="grid_height" value="30" min="10" max="100" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
+            <input type="number" name="grid_height" id="grid_height" value="30" min="10" max="52" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
         </div>
 
         <div>
             <label for="color_count" style="display: block; margin-bottom: 5px; font-weight: bold;">Liczba kolorów:</label>
             <input type="number" name="color_count" id="color_count" value="8" min="2" max="20" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
         </div>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Typ numeracji:</label>
+        <div style="display: flex; gap: 20px;">
+            <label style="display: flex; align-items: center; gap: 5px;">
+                <input type="radio" name="numbering_type" value="numbers" checked>
+                <span>Numerki w polach (1, 2, 3...)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 5px;">
+                <input type="radio" name="numbering_type" value="chess">
+                <span>Współrzędne jak szachy (A1, B2...)</span>
+            </label>
+        </div>
+        <small style="color: #666; display: block; margin-top: 5px;">Dla szachownicy max 52x52 (a-z, A-Z)</small>
     </div>
 
     <button type="submit" class="btn">Generuj Siatkę</button>
