@@ -26,7 +26,7 @@ class GridController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
             'grid_width' => 'nullable|integer|min:10|max:100',
             'grid_height' => 'nullable|integer|min:10|max:100',
-            'color_count' => 'nullable|integer|min:3|max:20',
+            'color_count' => 'nullable|integer|min:2|max:20',
         ]);
 
         $image = $request->file('image');

@@ -37,7 +37,7 @@
 
         <div>
             <label for="color_count" style="display: block; margin-bottom: 5px; font-weight: bold;">Liczba kolorów:</label>
-            <input type="number" name="color_count" id="color_count" value="8" min="3" max="20" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
+            <input type="number" name="color_count" id="color_count" value="8" min="2" max="20" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
         </div>
     </div>
 
