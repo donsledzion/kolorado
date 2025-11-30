@@ -1,10 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Nowa Siatka')
+@section('title', 'Generator Siatek do Kolorowania')
 
 @section('content')
-<a href="{{ route('grids.index') }}" style="color: #4f46e5; text-decoration: none; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 5px; font-weight: 500;">&larr; Powrót</a>
-
 @if($errors->any())
     <div class="alert alert-error">
         <ul style="margin-left: 20px;">

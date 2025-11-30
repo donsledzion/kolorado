@@ -3,7 +3,7 @@
 @section('title', 'Siatka: ' . $grid->original_filename)
 
 @section('content')
-<a href="{{ route('grids.index') }}" style="color: #007bff; text-decoration: none; margin-bottom: 20px; display: inline-block;">&larr; Powrót do listy</a>
+<a href="{{ route('home') }}" style="color: #4f46e5; text-decoration: none; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 5px; font-weight: 500;">&larr; Nowa siatka</a>
 
 <div style="margin-bottom: 30px;">
     <h2 style="font-size: 18px; margin-bottom: 10px;">{{ $grid->original_filename }}</h2>

@@ -3,8 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GridController;
 
-Route::redirect('/', '/grids');
+// Homepage = create page
+Route::get('/', [GridController::class, 'create'])->name('home');
 
-Route::resource('grids', GridController::class)->only([
-    'index', 'create', 'store', 'show'
-]);
+// Only create and show routes (no index/list)
+Route::post('/generate', [GridController::class, 'store'])->name('grids.store');
+Route::get('/grid/{grid}', [GridController::class, 'show'])->name('grids.show');
