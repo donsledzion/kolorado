@@ -48,22 +48,70 @@
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
-        <div>
-            <label for="grid_width" style="display: block; margin-bottom: 5px; font-weight: bold;">Szerokość siatki:</label>
-            <input type="number" name="grid_width" id="grid_width" value="30" min="10" max="52" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
+    <!-- Live Preview Canvas -->
+    <div id="canvasContainer" style="display: none; margin-bottom: 30px; text-align: center;">
+        <h3 style="margin-bottom: 15px;">Podgląd siatki:</h3>
+        <div style="display: inline-block; position: relative;">
+            <canvas id="gridPreviewCanvas" style="max-width: 100%; border: 2px solid #333; border-radius: 5px;"></canvas>
         </div>
+        <p id="gridDimensions" style="margin-top: 10px; color: #666; font-weight: bold;"></p>
+    </div>
 
-        <div>
-            <label for="grid_height" style="display: block; margin-bottom: 5px; font-weight: bold;">Wysokość siatki:</label>
-            <input type="number" name="grid_height" id="grid_height" value="30" min="10" max="52" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
-        </div>
-
-        <div>
-            <label for="color_count" style="display: block; margin-bottom: 5px; font-weight: bold;">Liczba kolorów:</label>
-            <input type="number" name="color_count" id="color_count" value="8" min="2" max="20" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
+    <!-- Aspect Ratio Mode Toggle -->
+    <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 10px; font-weight: bold;">Tryb proporcji:</label>
+        <div style="display: flex; gap: 20px; margin-bottom: 15px;">
+            <label style="display: flex; align-items: center; gap: 5px;">
+                <input type="radio" name="aspect_ratio_mode" value="auto" id="aspectAuto" checked>
+                <span>Auto (zachowaj proporcje obrazka)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 5px;">
+                <input type="radio" name="aspect_ratio_mode" value="manual" id="aspectManual">
+                <span>Manualny (własne wymiary)</span>
+            </label>
         </div>
     </div>
+
+    <!-- Auto Mode Controls -->
+    <div id="autoControls">
+        <div style="margin-bottom: 20px;">
+            <label for="gridSizeSlider" style="display: block; margin-bottom: 10px; font-weight: bold;">
+                Rozmiar siatki: <span id="sliderValue">30</span> pól (max wymiar)
+            </label>
+            <input type="range" id="gridSizeSlider" min="10" max="52" value="30"
+                style="width: 100%; height: 8px; border-radius: 5px; background: #ddd; outline: none;">
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label for="color_count_auto" style="display: block; margin-bottom: 5px; font-weight: bold;">Liczba kolorów:</label>
+            <input type="number" id="color_count_auto" value="8" min="2" max="20" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 200px;">
+        </div>
+    </div>
+
+    <!-- Manual Mode Controls -->
+    <div id="manualControls" style="display: none;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+            <div>
+                <label for="grid_width_manual" style="display: block; margin-bottom: 5px; font-weight: bold;">Szerokość siatki:</label>
+                <input type="number" id="grid_width_manual" value="30" min="10" max="52" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
+            </div>
+
+            <div>
+                <label for="grid_height_manual" style="display: block; margin-bottom: 5px; font-weight: bold;">Wysokość siatki:</label>
+                <input type="number" id="grid_height_manual" value="30" min="10" max="52" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
+            </div>
+
+            <div>
+                <label for="color_count_manual" style="display: block; margin-bottom: 5px; font-weight: bold;">Liczba kolorów:</label>
+                <input type="number" id="color_count_manual" value="8" min="2" max="20" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden inputs for form submission -->
+    <input type="hidden" name="grid_width" id="grid_width">
+    <input type="hidden" name="grid_height" id="grid_height">
+    <input type="hidden" name="color_count" id="color_count">
 
     <div style="margin-bottom: 20px;">
         <label style="display: block; margin-bottom: 5px; font-weight: bold;">Typ numeracji:</label>
@@ -124,6 +172,24 @@
     const uploadForm = document.getElementById('uploadForm');
     const submitBtn = document.getElementById('submitBtn');
     const loadingSpinner = document.getElementById('loadingSpinner');
+
+    // Canvas elements
+    const canvasContainer = document.getElementById('canvasContainer');
+    const canvas = document.getElementById('gridPreviewCanvas');
+    const ctx = canvas.getContext('2d');
+    const gridDimensions = document.getElementById('gridDimensions');
+
+    // Controls
+    const aspectAuto = document.getElementById('aspectAuto');
+    const aspectManual = document.getElementById('aspectManual');
+    const autoControls = document.getElementById('autoControls');
+    const manualControls = document.getElementById('manualControls');
+    const gridSizeSlider = document.getElementById('gridSizeSlider');
+    const sliderValue = document.getElementById('sliderValue');
+
+    let currentImage = null;
+    let imageWidth = 0;
+    let imageHeight = 0;
 
     // Kliknięcie w dropzone lub przycisk "Wybierz plik"
     dropZone.addEventListener('click', (e) => {
@@ -191,12 +257,141 @@
             fileName.textContent = file.name;
             dropContent.style.display = 'none';
             previewContainer.style.display = 'block';
+
+            // Load image for canvas
+            const img = new Image();
+            img.onload = function() {
+                currentImage = img;
+                imageWidth = img.width;
+                imageHeight = img.height;
+                canvasContainer.style.display = 'block';
+                drawGridPreview();
+            };
+            img.src = e.target.result;
         };
         reader.readAsDataURL(file);
     }
 
+    // Toggle between auto and manual mode
+    aspectAuto.addEventListener('change', function() {
+        if (this.checked) {
+            autoControls.style.display = 'block';
+            manualControls.style.display = 'none';
+            drawGridPreview();
+        }
+    });
+
+    aspectManual.addEventListener('change', function() {
+        if (this.checked) {
+            autoControls.style.display = 'none';
+            manualControls.style.display = 'block';
+            drawGridPreview();
+        }
+    });
+
+    // Slider change
+    gridSizeSlider.addEventListener('input', function() {
+        sliderValue.textContent = this.value;
+        drawGridPreview();
+    });
+
+    // Manual inputs change
+    document.getElementById('grid_width_manual').addEventListener('input', drawGridPreview);
+    document.getElementById('grid_height_manual').addEventListener('input', drawGridPreview);
+
+    function drawGridPreview() {
+        if (!currentImage) return;
+
+        let gridWidth, gridHeight;
+
+        if (aspectAuto.checked) {
+            // Auto mode - calculate proportions
+            const maxSize = parseInt(gridSizeSlider.value);
+            const aspectRatio = imageWidth / imageHeight;
+
+            if (aspectRatio > 1) {
+                // Landscape
+                gridWidth = maxSize;
+                gridHeight = Math.round(maxSize / aspectRatio);
+            } else {
+                // Portrait
+                gridHeight = maxSize;
+                gridWidth = Math.round(maxSize * aspectRatio);
+            }
+        } else {
+            // Manual mode
+            gridWidth = parseInt(document.getElementById('grid_width_manual').value) || 30;
+            gridHeight = parseInt(document.getElementById('grid_height_manual').value) || 30;
+        }
+
+        // Set canvas size
+        const maxCanvasSize = 600;
+        const canvasAspect = gridWidth / gridHeight;
+        if (canvasAspect > 1) {
+            canvas.width = maxCanvasSize;
+            canvas.height = maxCanvasSize / canvasAspect;
+        } else {
+            canvas.height = maxCanvasSize;
+            canvas.width = maxCanvasSize * canvasAspect;
+        }
+
+        // Draw image
+        ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
+
+        // Draw grid overlay
+        ctx.strokeStyle = '#00ff00';
+        ctx.lineWidth = 1;
+
+        const cellWidth = canvas.width / gridWidth;
+        const cellHeight = canvas.height / gridHeight;
+
+        // Vertical lines
+        for (let i = 0; i <= gridWidth; i++) {
+            ctx.beginPath();
+            ctx.moveTo(i * cellWidth, 0);
+            ctx.lineTo(i * cellWidth, canvas.height);
+            ctx.stroke();
+        }
+
+        // Horizontal lines
+        for (let i = 0; i <= gridHeight; i++) {
+            ctx.beginPath();
+            ctx.moveTo(0, i * cellHeight);
+            ctx.lineTo(canvas.width, i * cellHeight);
+            ctx.stroke();
+        }
+
+        // Update dimensions text
+        gridDimensions.textContent = `Siatka: ${gridWidth} × ${gridHeight} pól`;
+    }
+
     // Spinner przy wysyłaniu formularza
-    uploadForm.addEventListener('submit', function() {
+    uploadForm.addEventListener('submit', function(e) {
+        // Set hidden form values based on mode
+        let gridWidth, gridHeight, colorCount;
+
+        if (aspectAuto.checked) {
+            const maxSize = parseInt(gridSizeSlider.value);
+            const aspectRatio = imageWidth / imageHeight;
+
+            if (aspectRatio > 1) {
+                gridWidth = maxSize;
+                gridHeight = Math.round(maxSize / aspectRatio);
+            } else {
+                gridHeight = maxSize;
+                gridWidth = Math.round(maxSize * aspectRatio);
+            }
+            colorCount = parseInt(document.getElementById('color_count_auto').value);
+        } else {
+            gridWidth = parseInt(document.getElementById('grid_width_manual').value);
+            gridHeight = parseInt(document.getElementById('grid_height_manual').value);
+            colorCount = parseInt(document.getElementById('color_count_manual').value);
+        }
+
+        document.getElementById('grid_width').value = gridWidth;
+        document.getElementById('grid_height').value = gridHeight;
+        document.getElementById('color_count').value = colorCount;
+
         submitBtn.style.display = 'none';
         loadingSpinner.style.display = 'block';
     });

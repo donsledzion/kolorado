@@ -23,17 +23,17 @@ class GridController extends Controller
     public function store(Request $request)
     {
         $numberingType = $request->input('numbering_type', 'numbers');
-        $gridWidth = $request->input('grid_width', 30);
-        $gridHeight = $request->input('grid_height', 30);
+        $aspectRatioMode = $request->input('aspect_ratio_mode', 'manual');
 
         $maxSize = $numberingType === 'chess' ? 52 : 100;
 
         $request->validate([
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
-            'grid_width' => "nullable|integer|min:10|max:{$maxSize}",
-            'grid_height' => "nullable|integer|min:10|max:{$maxSize}",
+            'grid_width' => "required|integer|min:10|max:{$maxSize}",
+            'grid_height' => "required|integer|min:10|max:{$maxSize}",
             'color_count' => 'nullable|integer|min:2|max:20',
             'numbering_type' => 'nullable|in:numbers,chess',
+            'aspect_ratio_mode' => 'nullable|in:auto,manual',
         ]);
 
         $image = $request->file('image');
@@ -43,10 +43,11 @@ class GridController extends Controller
         $grid = ColoringGrid::create([
             'original_filename' => $image->getClientOriginalName(),
             'original_image_path' => $path,
-            'grid_width' => $gridWidth,
-            'grid_height' => $gridHeight,
+            'grid_width' => $request->input('grid_width'),
+            'grid_height' => $request->input('grid_height'),
             'color_count' => $request->input('color_count', 8),
             'numbering_type' => $numberingType,
+            'aspect_ratio_mode' => $aspectRatioMode,
         ]);
 
         $this->processImage($grid);

@@ -14,6 +14,7 @@ class ColoringGrid extends Model
         'grid_height',
         'color_count',
         'numbering_type',
+        'aspect_ratio_mode',
         'grid_data',
         'color_palette',
     ];
