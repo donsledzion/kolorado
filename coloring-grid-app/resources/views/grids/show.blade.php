@@ -93,7 +93,6 @@
                         <div style="width: 40px; height: 40px; background: rgb({{ $color[0] }}, {{ $color[1] }}, {{ $color[2] }}); border: 2px solid #333; border-radius: 5px; flex-shrink: 0;"></div>
                         <div>
                             <strong style="display: block;">Kolor {{ $index + 1 }}</strong>
-                            <small style="color: #666;">RGB({{ $color[0] }}, {{ $color[1] }}, {{ $color[2] }})</small>
                         </div>
                     </div>
                     <div style="font-size: 14px; line-height: 1.6;">
@@ -113,7 +112,6 @@
                     <div style="text-align: center;">
                         <div style="width: 60px; height: 60px; background: rgb({{ $color[0] }}, {{ $color[1] }}, {{ $color[2] }}); border: 2px solid #333; border-radius: 5px;"></div>
                         <small style="display: block; margin-top: 5px; font-weight: bold;">{{ $index + 1 }}</small>
-                        <small style="color: #666;">RGB({{ $color[0] }}, {{ $color[1] }}, {{ $color[2] }})</small>
                     </div>
                 @endif
             @endforeach
