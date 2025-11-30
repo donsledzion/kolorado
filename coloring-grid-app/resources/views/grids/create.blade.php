@@ -143,13 +143,24 @@
         </div>
 
         <!-- Right Panel - Preview -->
-        <div id="canvasContainer" style="display: none;">
-            <div style="position: sticky; top: 20px; background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb;">
-                <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600; color: #111827;">Podgląd siatki</h3>
-                <div style="text-align: center;">
-                    <canvas id="gridPreviewCanvas" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></canvas>
-                    <p id="gridDimensions" style="margin-top: 12px; color: #6b7280; font-weight: 500; font-size: 14px;"></p>
+        <div id="previewPanel" style="position: sticky; top: 20px; background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb;">
+            <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600; color: #111827;">Podgląd siatki</h3>
+
+            <!-- Placeholder (shown initially) -->
+            <div id="previewPlaceholder" style="text-align: center;">
+                <div style="display: inline-block; padding: 60px; background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-radius: 12px; border: 2px dashed #e5e7eb;">
+                    <svg style="width: 100px; height: 100px; color: #d1d5db; margin-bottom: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
+                    </svg>
+                    <p style="margin: 0; color: #9ca3af; font-size: 15px; font-weight: 500;">Wczytaj obrazek, aby zobaczyć podgląd siatki</p>
+                    <p style="margin: 8px 0 0 0; color: #d1d5db; font-size: 13px;">Przeciągnij plik lub kliknij "Wybierz plik"</p>
                 </div>
+            </div>
+
+            <!-- Canvas (shown after image load) -->
+            <div id="canvasContainer" style="display: none; text-align: center;">
+                <canvas id="gridPreviewCanvas" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></canvas>
+                <p id="gridDimensions" style="margin-top: 12px; color: #6b7280; font-weight: 500; font-size: 14px;"></p>
             </div>
         </div>
 
@@ -345,6 +356,7 @@
     const loadingSpinner = document.getElementById('loadingSpinner');
 
     // Canvas elements
+    const previewPlaceholder = document.getElementById('previewPlaceholder');
     const canvasContainer = document.getElementById('canvasContainer');
     const canvas = document.getElementById('gridPreviewCanvas');
     const ctx = canvas.getContext('2d');
@@ -435,6 +447,9 @@
                 currentImage = img;
                 imageWidth = img.width;
                 imageHeight = img.height;
+
+                // Hide placeholder, show canvas
+                previewPlaceholder.style.display = 'none';
                 canvasContainer.style.display = 'block';
                 drawGridPreview();
             };
