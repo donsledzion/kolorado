@@ -3,7 +3,7 @@
 @section('title', 'Nowa Siatka')
 
 @section('content')
-<a href="{{ route('grids.index') }}" style="color: #007bff; text-decoration: none; margin-bottom: 20px; display: inline-block;">&larr; Powrót</a>
+<a href="{{ route('grids.index') }}" style="color: #4f46e5; text-decoration: none; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 5px; font-weight: 500;">&larr; Powrót</a>
 
 @if($errors->any())
     <div class="alert alert-error">
@@ -18,143 +18,314 @@
 <form action="{{ route('grids.store') }}" method="POST" enctype="multipart/form-data" id="uploadForm">
     @csrf
 
-    <!-- Drag & Drop Zone -->
-    <div id="dropZone" style="
-        margin-bottom: 20px;
-        padding: 40px;
-        border: 3px dashed #ccc;
-        border-radius: 10px;
-        text-align: center;
-        background: #fafafa;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    ">
-        <input type="file" name="image" id="image" accept="image/*" required style="display: none;">
+    <div style="display: grid; grid-template-columns: 400px 1fr; gap: 30px; align-items: start;">
 
-        <div id="dropContent">
-            <svg style="width: 80px; height: 80px; margin: 0 auto 20px; color: #999;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-            </svg>
-            <h3 style="margin: 0 0 10px 0; color: #333;">Przeciągnij i upuść obrazek tutaj</h3>
-            <p style="margin: 0 0 15px 0; color: #666;">lub</p>
-            <button type="button" id="browseBtn" class="btn" style="background: #28a745;">Wybierz plik</button>
-            <p style="margin: 15px 0 0 0; color: #999; font-size: 14px;">JPG, PNG, GIF (max 10MB)</p>
-        </div>
+        <!-- Left Panel - Settings -->
+        <div style="position: sticky; top: 20px;">
 
-        <div id="previewContainer" style="display: none;">
-            <img id="imagePreview" style="max-width: 100%; max-height: 300px; border-radius: 5px; margin-bottom: 15px;">
-            <p id="fileName" style="font-weight: bold; color: #333; margin: 0 0 10px 0;"></p>
-            <button type="button" id="changeBtn" class="btn" style="background: #6c757d;">Zmień obrazek</button>
-        </div>
-    </div>
+            <!-- Drag & Drop Zone (Compact) -->
+            <div id="dropZone" style="
+                margin-bottom: 20px;
+                padding: 20px;
+                border: 2px dashed #e5e7eb;
+                border-radius: 12px;
+                text-align: center;
+                background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+                cursor: pointer;
+                transition: all 0.3s ease;
+            ">
+                <input type="file" name="image" id="image" accept="image/*" required style="display: none;">
 
-    <!-- Live Preview Canvas -->
-    <div id="canvasContainer" style="display: none; margin-bottom: 30px; text-align: center;">
-        <h3 style="margin-bottom: 15px;">Podgląd siatki:</h3>
-        <div style="display: inline-block; position: relative;">
-            <canvas id="gridPreviewCanvas" style="max-width: 100%; border: 2px solid #333; border-radius: 5px;"></canvas>
-        </div>
-        <p id="gridDimensions" style="margin-top: 10px; color: #666; font-weight: bold;"></p>
-    </div>
+                <div id="dropContent">
+                    <svg style="width: 40px; height: 40px; margin: 0 auto 10px; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">Przeciągnij obrazek lub</p>
+                    <button type="button" id="browseBtn" class="modern-btn">Wybierz plik</button>
+                    <p style="margin: 10px 0 0 0; color: #9ca3af; font-size: 12px;">JPG, PNG, GIF</p>
+                </div>
 
-    <!-- Aspect Ratio Mode Toggle -->
-    <div style="margin-bottom: 20px;">
-        <label style="display: block; margin-bottom: 10px; font-weight: bold;">Tryb proporcji:</label>
-        <div style="display: flex; gap: 20px; margin-bottom: 15px;">
-            <label style="display: flex; align-items: center; gap: 5px;">
-                <input type="radio" name="aspect_ratio_mode" value="auto" id="aspectAuto" checked>
-                <span>Auto (zachowaj proporcje obrazka)</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 5px;">
-                <input type="radio" name="aspect_ratio_mode" value="manual" id="aspectManual">
-                <span>Manualny (własne wymiary)</span>
-            </label>
-        </div>
-    </div>
-
-    <!-- Auto Mode Controls -->
-    <div id="autoControls">
-        <div style="margin-bottom: 20px;">
-            <label for="gridSizeSlider" style="display: block; margin-bottom: 10px; font-weight: bold;">
-                Rozmiar siatki: <span id="sliderValue">30</span> pól (max wymiar)
-            </label>
-            <input type="range" id="gridSizeSlider" min="10" max="52" value="30"
-                style="width: 100%; height: 8px; border-radius: 5px; background: #ddd; outline: none;">
-        </div>
-
-        <div style="margin-bottom: 20px;">
-            <label for="color_count_auto" style="display: block; margin-bottom: 5px; font-weight: bold;">Liczba kolorów:</label>
-            <input type="number" id="color_count_auto" value="8" min="2" max="20" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 200px;">
-        </div>
-    </div>
-
-    <!-- Manual Mode Controls -->
-    <div id="manualControls" style="display: none;">
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
-            <div>
-                <label for="grid_width_manual" style="display: block; margin-bottom: 5px; font-weight: bold;">Szerokość siatki:</label>
-                <input type="number" id="grid_width_manual" value="30" min="10" max="52" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
+                <div id="previewContainer" style="display: none;">
+                    <img id="imagePreview" style="max-width: 100%; max-height: 120px; border-radius: 8px; margin-bottom: 10px;">
+                    <p id="fileName" style="font-size: 12px; color: #6b7280; margin: 0 0 10px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></p>
+                    <button type="button" id="changeBtn" class="modern-btn-secondary">Zmień</button>
+                </div>
             </div>
 
-            <div>
-                <label for="grid_height_manual" style="display: block; margin-bottom: 5px; font-weight: bold;">Wysokość siatki:</label>
-                <input type="number" id="grid_height_manual" value="30" min="10" max="52" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
+            <!-- Settings Card -->
+            <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb;">
+
+                <!-- Mode Toggle -->
+                <div style="margin-bottom: 24px;">
+                    <label style="display: block; margin-bottom: 12px; font-weight: 600; color: #111827; font-size: 14px;">Tryb proporcji</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <label class="radio-card">
+                            <input type="radio" name="aspect_ratio_mode" value="auto" id="aspectAuto" checked>
+                            <span>Auto</span>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="aspect_ratio_mode" value="manual" id="aspectManual">
+                            <span>Manual</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Auto Controls -->
+                <div id="autoControls">
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151; font-size: 14px;">
+                            Rozmiar: <span id="sliderValue" style="color: #4f46e5; font-weight: 600;">30</span> pól
+                        </label>
+                        <input type="range" id="gridSizeSlider" min="10" max="52" value="30" class="modern-slider">
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151; font-size: 14px;">Kolory</label>
+                        <input type="number" id="color_count_auto" value="8" min="2" max="20" class="modern-input">
+                    </div>
+                </div>
+
+                <!-- Manual Controls -->
+                <div id="manualControls" style="display: none;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151; font-size: 14px;">Szerokość</label>
+                            <input type="number" id="grid_width_manual" value="30" min="10" max="52" class="modern-input">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151; font-size: 14px;">Wysokość</label>
+                            <input type="number" id="grid_height_manual" value="30" min="10" max="52" class="modern-input">
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151; font-size: 14px;">Kolory</label>
+                        <input type="number" id="color_count_manual" value="8" min="2" max="20" class="modern-input">
+                    </div>
+                </div>
+
+                <!-- Numbering Type -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 12px; font-weight: 600; color: #111827; font-size: 14px;">Numeracja</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <label class="radio-card">
+                            <input type="radio" name="numbering_type" value="numbers" checked>
+                            <span>1,2,3...</span>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="numbering_type" value="chess">
+                            <span>A1,B2...</span>
+                        </label>
+                    </div>
+                    <small style="color: #9ca3af; font-size: 11px; display: block; margin-top: 6px;">Szachy max 52×52</small>
+                </div>
+
+                <!-- Hidden inputs -->
+                <input type="hidden" name="grid_width" id="grid_width">
+                <input type="hidden" name="grid_height" id="grid_height">
+                <input type="hidden" name="color_count" id="color_count">
+
+                <!-- Submit Button -->
+                <button type="submit" class="modern-btn-primary" id="submitBtn">
+                    <svg style="width: 20px; height: 20px; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    Generuj Siatkę
+                </button>
+
+                <!-- Loading Spinner -->
+                <div id="loadingSpinner" style="display: none; text-align: center; padding: 20px;">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 12px; color: #6b7280; font-size: 14px;">Generowanie...</p>
+                </div>
             </div>
 
-            <div>
-                <label for="color_count_manual" style="display: block; margin-bottom: 5px; font-weight: bold;">Liczba kolorów:</label>
-                <input type="number" id="color_count_manual" value="8" min="2" max="20" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
+        </div>
+
+        <!-- Right Panel - Preview -->
+        <div id="canvasContainer" style="display: none;">
+            <div style="position: sticky; top: 20px; background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb;">
+                <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600; color: #111827;">Podgląd siatki</h3>
+                <div style="text-align: center;">
+                    <canvas id="gridPreviewCanvas" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></canvas>
+                    <p id="gridDimensions" style="margin-top: 12px; color: #6b7280; font-weight: 500; font-size: 14px;"></p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Hidden inputs for form submission -->
-    <input type="hidden" name="grid_width" id="grid_width">
-    <input type="hidden" name="grid_height" id="grid_height">
-    <input type="hidden" name="color_count" id="color_count">
-
-    <div style="margin-bottom: 20px;">
-        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Typ numeracji:</label>
-        <div style="display: flex; gap: 20px;">
-            <label style="display: flex; align-items: center; gap: 5px;">
-                <input type="radio" name="numbering_type" value="numbers" checked>
-                <span>Numerki w polach (1, 2, 3...)</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 5px;">
-                <input type="radio" name="numbering_type" value="chess">
-                <span>Współrzędne jak szachy (A1, B2...)</span>
-            </label>
-        </div>
-        <small style="color: #666; display: block; margin-top: 5px;">Dla szachownicy max 52x52 (a-z, A-Z)</small>
-    </div>
-
-    <button type="submit" class="btn" id="submitBtn">Generuj Siatkę</button>
-
-    <!-- Loading Spinner -->
-    <div id="loadingSpinner" style="display: none; text-align: center; margin-top: 20px;">
-        <div style="
-            display: inline-block;
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #007bff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        "></div>
-        <p style="margin-top: 15px; color: #666; font-weight: bold;">Generowanie siatki...</p>
-    </div>
 </form>
 
 @push('styles')
 <style>
+    /* Modern Buttons */
+    .modern-btn {
+        padding: 8px 16px;
+        background: #4f46e5;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .modern-btn:hover {
+        background: #4338ca;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+
+    .modern-btn-secondary {
+        padding: 6px 14px;
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .modern-btn-secondary:hover {
+        background: #e5e7eb;
+        border-color: #d1d5db;
+    }
+
+    .modern-btn-primary {
+        width: 100%;
+        padding: 14px 20px;
+        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+    }
+    .modern-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+    }
+    .modern-btn-primary:active {
+        transform: translateY(0);
+    }
+
+    /* Modern Input */
+    .modern-input {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s;
+        background: white;
+    }
+    .modern-input:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    /* Modern Slider */
+    .modern-slider {
+        width: 100%;
+        height: 6px;
+        border-radius: 10px;
+        background: #e5e7eb;
+        outline: none;
+        -webkit-appearance: none;
+    }
+    .modern-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #4f46e5;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+        transition: all 0.2s;
+    }
+    .modern-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+        box-shadow: 0 3px 12px rgba(79, 70, 229, 0.5);
+    }
+    .modern-slider::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #4f46e5;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+    }
+
+    /* Radio Card */
+    .radio-card {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: white;
+    }
+    .radio-card input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+    }
+    .radio-card span {
+        font-size: 13px;
+        font-weight: 500;
+        color: #6b7280;
+    }
+    .radio-card:hover {
+        border-color: #4f46e5;
+        background: #f9fafb;
+    }
+    .radio-card input[type="radio"]:checked + span {
+        color: #4f46e5;
+    }
+    .radio-card:has(input[type="radio"]:checked) {
+        border-color: #4f46e5;
+        background: #eef2ff;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    /* Spinner */
+    .spinner {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f4f6;
+        border-top: 4px solid #4f46e5;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
 
     #dropZone.dragover {
-        border-color: #007bff !important;
-        background: #e7f3ff !important;
+        border-color: #4f46e5 !important;
+        background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%) !important;
+        transform: scale(1.02);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        form > div {
+            grid-template-columns: 1fr !important;
+        }
     }
 </style>
 @endpush
